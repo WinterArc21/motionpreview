@@ -270,6 +270,7 @@ function label(a) {
 // ---------- cursor, selection, feed ----------
 
 const cursor = $('#cursor');
+let idleTimer; // hides the cursor when the agent has been quiet for a while
 const selection = $('#selection');
 
 function stageRect() { return stage.getBoundingClientRect(); }
@@ -299,9 +300,24 @@ function showSelection(rect, text) {
   selection.classList.add('on');
 }
 
+$('#cursorName').textContent = params.get('agent') || 'Agent';
+
 function placeCursor(x, y) {
+  // Lean the pointer a little into horizontal motion, like a hand moving a mouse.
+  const vx = state.cx == null ? 0 : x - state.cx;
+  cursor.style.setProperty('--lean', `${clamp(vx * 0.9, -14, 14).toFixed(1)}deg`);
   state.cx = x; state.cy = y;
-  cursor.style.transform = `translate(${x - 3}px, ${y - 2}px)`;
+  cursor.style.transform = `translate(${x - 4}px, ${y - 4}px)`;
+}
+
+// Changes the action text; the pill grows or shrinks to fit it.
+function setCursorText(text) {
+  const box = cursor.querySelector('.what');
+  const span = document.createElement('span');
+  span.id = 'cursorText';
+  span.textContent = text;
+  box.replaceChildren(...(text ? [span] : []));
+  box.style.width = (text ? span.offsetWidth + 8 : 0) + 'px';
 }
 
 // Moves along a slight curve with ease-in-out, so it reads as a hand, not a tween.
@@ -320,7 +336,7 @@ function moveCursor(x, y) {
       const e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
       const u = 1 - e;
       placeCursor(u * u * x0 + 2 * u * e * cxp + e * e * x, u * u * y0 + 2 * u * e * cyp + e * e * y);
-      if (p < 1) requestAnimationFrame(step); else resolve();
+      if (p < 1) requestAnimationFrame(step); else { cursor.style.setProperty('--lean', '0deg'); resolve(); }
     };
     requestAnimationFrame(step);
   });
@@ -386,6 +402,8 @@ async function apply(html, animate) {
   const { actions, steps } = diff(parse(state.shown), parse(html));
   for (const s of steps) feed(s, 'step');
   setStatus(steps.at(-1) || 'Agent is editing…', true);
+  cursor.classList.add('busy');
+  clearTimeout(idleTimer);
   const wasPlaying = state.playing;
   setPlaying(false);
 
@@ -407,7 +425,7 @@ async function apply(html, animate) {
     await scrubTo(focusTime(fi, el));
     const onTimeline = a.kinds.has('retime') && !a.kinds.has('add') && rowRect(a.key);
     const rect = onTimeline || canvasRect(el);
-    $('#cursorText').textContent = text;
+    setCursorText(text);
     showSelection(rect, a.name);
     await moveCursor(rect.x + Math.min(rect.w * 0.4, 160), rect.y + Math.min(rect.h * 0.45, 90));
     await click();
@@ -425,8 +443,9 @@ async function apply(html, animate) {
   document.querySelectorAll('.row.pending').forEach(r => r.classList.replace('pending', 'new'));
   if (actions.length > todo.length) feed(`+${actions.length - todo.length} more changes`, 'muted');
   selection.classList.remove('on');
-  $('#cursorText').textContent = '';
-  setTimeout(() => { if (!state.busy) cursor.classList.remove('on'); }, 2500 / SPEED);
+  setCursorText('');
+  cursor.classList.remove('busy');
+  idleTimer = setTimeout(() => { if (!state.busy) cursor.classList.remove('on'); }, 5000 / SPEED);
   setStatus(steps.at(-1) ? `Done: ${steps.at(-1)}` : 'Watching for changes', false);
   if (wasPlaying) setPlaying(true);
 }

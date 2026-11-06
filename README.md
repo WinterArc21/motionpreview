@@ -19,7 +19,7 @@ npm run demo         # viewer, watching demo/index.html
 npm run demo:agent   # writes the composition in 6 steps
 ```
 
-Click **Replay build** to watch the current composition get built again from an empty canvas. Add `?speed=2` to the URL for faster cursor actions.
+Click **Replay build** to watch the current composition get built again from an empty canvas. Add `?speed=2` to the URL for faster cursor actions, and `?agent=Claude` to set the name on the cursor.
 
 ## Labels from the agent
 
