@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MotionPreview — Launch Teaser</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #05060c; }
+  body { font-family: Inter, system-ui, sans-serif; }
+  #stage {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: #07081a;
+    color: #f4f5ff;
+  }
+  .clip { position: absolute; }
+  #bg {
+    left: 0; top: 0; width: 1920px; height: 1080px;
+    background:
+      radial-gradient(1200px 800px at 20% 15%, #1b1f5e 0%, rgba(27,31,94,0) 60%),
+      radial-gradient(1000px 700px at 85% 90%, #3a1660 0%, rgba(58,22,96,0) 60%),
+      linear-gradient(160deg, #07081a 0%, #0b0d26 55%, #120a24 100%);
+  }
+  #grid {
+    left: -60px; top: -60px; width: 2040px; height: 1200px;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    -webkit-mask-image: radial-gradient(ellipse 60% 55% at 50% 50%, #000 30%, transparent 100%);
+            mask-image: radial-gradient(ellipse 60% 55% at 50% 50%, #000 30%, transparent 100%);
+  }
+  #orbA, #orbB {
+    border-radius: 50%;
+    filter: blur(80px);
+  }
+  #orbA {
+    left: 1180px; top: 80px; width: 620px; height: 620px;
+    background: radial-gradient(circle, rgba(124,92,255,0.75), rgba(124,92,255,0) 70%);
+  }
+  #orbB {
+    left: 120px; top: 560px; width: 560px; height: 560px;
+    background: radial-gradient(circle, rgba(255,107,138,0.5), rgba(255,107,138,0) 70%);
+  }
+  #logo {
+    left: 160px; top: 130px;
+    display: flex; align-items: center; gap: 22px;
+  }
+  #logoMark {
+    width: 76px; height: 76px; border-radius: 22px;
+    background: linear-gradient(135deg, #7c5cff 0%, #00d4ff 100%);
+    box-shadow: 0 18px 50px rgba(124,92,255,0.45), inset 0 1px 0 rgba(255,255,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #logoWord {
+    font-size: 40px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  #logoWord span { color: #9d8cff; }
+  #headline {
+    left: 160px; top: 300px; width: 900px;
+    font-size: 116px; font-weight: 800; line-height: 1.04; letter-spacing: -0.045em;
+  }
+  #headline .line { display: block; overflow: hidden; padding-bottom: 8px; white-space: nowrap; }
+  #headline .word { display: inline-block; margin-right: 0.22em; }
+  #hw5 {
+    background: linear-gradient(90deg, #9d8cff 0%, #ff6b8a 55%, #ffa36b 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  #subline {
+    left: 164px; top: 728px; width: 760px;
+    font-size: 34px; font-weight: 400; line-height: 1.4; color: rgba(228,231,255,0.72);
+  }
+  #subline b { color: #ffffff; font-weight: 600; }
+  #previewCard {
+    left: 1060px; top: 220px; width: 700px; height: 470px;
+    border-radius: 26px;
+    background: linear-gradient(180deg, rgba(30,33,74,0.92), rgba(16,18,44,0.92));
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 40px 120px rgba(0,0,0,0.55), 0 0 0 1px rgba(124,92,255,0.15);
+    overflow: hidden;
+  }
+  #pcBar {
+    position: absolute; left: 0; top: 0; width: 100%; height: 56px;
+    display: flex; align-items: center; gap: 10px; padding: 0 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 18px; color: rgba(228,231,255,0.6);
+  }
+  #pcBar i { width: 13px; height: 13px; border-radius: 50%; display: block; }
+  #pcLive {
+    margin-left: auto; padding: 5px 12px; border-radius: 999px;
+    background: rgba(255,77,109,0.16); color: #ff6b8a; font-weight: 700; font-size: 15px; letter-spacing: 0.08em;
+  }
+  #pcCanvas {
+    position: absolute; left: 22px; top: 76px; width: 656px; height: 230px; border-radius: 16px;
+    background: radial-gradient(400px 200px at 30% 40%, rgba(124,92,255,0.35), transparent 70%), #0a0c22;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  #pcShape {
+    position: absolute; left: 60px; top: 65px; width: 100px; height: 100px; border-radius: 28px;
+    background: linear-gradient(135deg, #7c5cff, #00d4ff);
+    box-shadow: 0 16px 40px rgba(0,212,255,0.35);
+  }
+  #pcTrackArea { position: absolute; left: 22px; top: 326px; width: 656px; height: 120px; }
+  .pcTrack {
+    position: absolute; left: 0; height: 22px; border-radius: 8px; transform-origin: left center;
+  }
+  #pcT1 { top: 8px;  width: 380px; background: linear-gradient(90deg, #7c5cff, #9d8cff); }
+  #pcT2 { top: 46px; left: 120px; width: 420px; background: linear-gradient(90deg, #00d4ff, #5ce1ff); }
+  #pcT3 { top: 84px; left: 240px; width: 300px; background: linear-gradient(90deg, #ff6b8a, #ffa36b); }
+  #pcHead {
+    position: absolute; left: 0; top: 0; width: 3px; height: 120px; background: #ffffff; border-radius: 2px;
+    box-shadow: 0 0 14px rgba(255,255,255,0.8);
+  }
+  #logCard {
+    left: 980px; top: 640px; width: 450px;
+    padding: 22px 24px; border-radius: 22px;
+    background: rgba(14,16,40,0.88);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+  #logTitle {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(228,231,255,0.5); margin-bottom: 14px;
+  }
+  .logRow {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 21px; color: #e9ebff; padding: 8px 0;
+  }
+  .logRow em {
+    width: 26px; height: 26px; border-radius: 50%; flex: none;
+    background: rgba(40,200,120,0.18); color: #3ee08f;
+    display: flex; align-items: center; justify-content: center;
+    font-style: normal; font-size: 15px; font-weight: 800;
+  }
+  .logRow span { margin-left: auto; font-size: 16px; color: rgba(228,231,255,0.4); }
+  #agentCursor {
+    left: 1600px; top: 900px;
+    filter: drop-shadow(0 8px 18px rgba(0,0,0,0.5));
+  }
+  #agentTag {
+    position: absolute; left: 30px; top: 30px;
+    padding: 7px 14px; border-radius: 10px 10px 10px 2px;
+    background: #7c5cff; color: #fff; font-size: 18px; font-weight: 700; white-space: nowrap;
+  }
+  #endRing {
+    left: 560px; top: 140px; width: 800px; height: 800px; border-radius: 50%;
+    border: 2px solid rgba(157,140,255,0.35);
+    box-shadow: 0 0 120px rgba(124,92,255,0.25), inset 0 0 120px rgba(0,212,255,0.12);
+  }
+  #endCard {
+    left: 0; top: 250px; width: 1920px;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+  }
+  #endMark {
+    width: 132px; height: 132px; border-radius: 38px;
+    background: linear-gradient(135deg, #7c5cff 0%, #00d4ff 100%);
+    box-shadow: 0 30px 90px rgba(124,92,255,0.55), inset 0 2px 0 rgba(255,255,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #endWord {
+    margin-top: 40px; font-size: 112px; font-weight: 800; letter-spacing: -0.05em; line-height: 1;
+  }
+  #endWord span { color: #9d8cff; }
+  #endTag {
+    margin-top: 26px; font-size: 36px; color: rgba(228,231,255,0.7);
+  }
+  #cta {
+    left: 0; top: 700px; width: 1920px;
+    display: flex; flex-direction: column; align-items: center; gap: 22px;
+  }
+  #ctaBtn {
+    position: relative; overflow: hidden;
+    padding: 26px 56px; border-radius: 999px;
+    background: linear-gradient(90deg, #7c5cff 0%, #00d4ff 100%);
+    color: #ffffff; font-size: 36px; font-weight: 700; letter-spacing: -0.01em;
+    box-shadow: 0 24px 70px rgba(124,92,255,0.5);
+  }
+  #ctaShine {
+    position: absolute; left: -160px; top: 0; width: 120px; height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.55), rgba(255,255,255,0));
+    transform: skewX(-20deg);
+  }
+  #ctaNote {
+    font-size: 22px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: rgba(228,231,255,0.5);
+  }
+</style>
+</head>
+<body>
+<div id="stage" data-composition-id="teaser" data-start="0" data-width="1920" data-height="1080" data-duration="8">
+  <!-- step: Set up the stage -->
+  <div id="bg" class="clip" data-start="0" data-duration="8" data-track-index="0"></div>
+
+  <!-- step: Add grid and glow orbs -->
+  <div id="grid" class="clip" data-start="0" data-duration="8" data-track-index="1"></div>
+  <div id="orbA" class="clip" data-start="0" data-duration="8" data-track-index="2"></div>
+  <div id="orbB" class="clip" data-start="0" data-duration="8" data-track-index="3"></div>
+
+  <!-- step: Logo mark and wordmark -->
+  <div id="logo" class="clip" data-start="0.2" data-duration="5.2" data-track-index="4">
+    <div id="logoMark">
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+        <path d="M14 9 L34 22 L14 35 Z" fill="#ffffff" fill-opacity="0.95"/>
+        <path d="M27 25 L27 41 L31 37 L34 43 L37 41.5 L34 35.5 L39 35.5 Z" fill="#0b0d26" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div id="logoWord">Motion<span>Preview</span></div>
+  </div>
+
+  <!-- step: Kinetic headline -->
+  <div id="headline" class="clip" data-start="0.7" data-duration="4.7" data-track-index="5">
+    <span class="line"><span id="hw1" class="word">Watch</span><span id="hw2" class="word">agents</span></span>
+    <span class="line"><span id="hw3" class="word">build</span><span id="hw4" class="word">motion.</span></span>
+    <span class="line"><span id="hw5" class="word">Live.</span></span>
+  </div>
+
+  <!-- step: Supporting line -->
+  <div id="subline" class="clip" data-start="1.5" data-duration="3.9" data-track-index="6">
+    Every save, every tweak, every keyframe, played back <b>as the agent works</b>.
+  </div>
+
+  <!-- step: Live preview UI card -->
+  <div id="previewCard" class="clip" data-start="2.0" data-duration="3.4" data-track-index="7">
+    <div id="pcBar">
+      <i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i>
+      <span style="margin-left:14px">teaser.html</span>
+      <span id="pcLive">● LIVE</span>
+    </div>
+    <div id="pcCanvas"><div id="pcShape"></div></div>
+    <div id="pcTrackArea">
+      <div id="pcT1" class="pcTrack"></div>
+      <div id="pcT2" class="pcTrack"></div>
+      <div id="pcT3" class="pcTrack"></div>
+      <div id="pcHead"></div>
+    </div>
+  </div>
+
+  <!-- step: Agent activity log card -->
+  <div id="logCard" class="clip" data-start="2.6" data-duration="2.8" data-track-index="8">
+    <div id="logTitle">Agent · step log</div>
+    <div id="log1" class="logRow"><em>✓</em>Set up the stage<span>0.4s</span></div>
+    <div id="log2" class="logRow"><em>✓</em>Kinetic headline<span>1.1s</span></div>
+    <div id="log3" class="logRow"><em>✓</em>Ease the logo in<span>1.8s</span></div>
+  </div>
+
+  <!-- step: Agent cursor drags the shape -->
+  <div id="agentCursor" class="clip" data-start="2.2" data-duration="3.2" data-track-index="9">
+    <svg width="34" height="40" viewBox="0 0 34 40" fill="none">
+      <path d="M3 2 L3 32 L11 25 L17 38 L23 35.5 L17 22.5 L28 22.5 Z" fill="#ffffff" stroke="#0b0d26" stroke-width="2.4" stroke-linejoin="round"/>
+    </svg>
+    <div id="agentTag">Claude · agent</div>
+  </div>
+
+  <!-- step: End card with logo lockup -->
+  <div id="endRing" class="clip" data-start="5.2" data-duration="2.8" data-track-index="10"></div>
+  <div id="endCard" class="clip" data-start="5.3" data-duration="2.7" data-track-index="11">
+    <div id="endMark">
+      <svg width="76" height="76" viewBox="0 0 44 44" fill="none">
+        <path d="M14 9 L34 22 L14 35 Z" fill="#ffffff" fill-opacity="0.95"/>
+        <path d="M27 25 L27 41 L31 37 L34 43 L37 41.5 L34 35.5 L39 35.5 Z" fill="#0b0d26" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div id="endWord">Motion<span>Preview</span></div>
+    <div id="endTag">Your agent designs. You watch every frame.</div>
+  </div>
+
+  <!-- step: Call to action button -->
+  <!-- step: Polish the copy -->
+  <!-- step: Warm accent and tighten type -->
+  <!-- step: Retime the headline rhythm -->
+  <div id="cta" class="clip" data-start="6.0" data-duration="2.0" data-track-index="12">
+    <div id="ctaBtn"><span id="ctaShine"></span>Try MotionPreview →</div>
+    <div id="ctaNote">Early access · Open now</div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script>
+  const tl = gsap.timeline({ paused: true });
+
+  tl.from("#bg", { opacity: 0, duration: 0.6, ease: "power1.out" }, 0);
+
+  // Grid drifts slowly; orbs breathe and wander
+  tl.from("#grid", { opacity: 0, duration: 1.2, ease: "power2.out" }, 0.1);
+  tl.to("#grid", { x: 60, y: 60, duration: 8, ease: "none" }, 0);
+  tl.from("#orbA", { opacity: 0, scale: 0.6, duration: 1.6, ease: "power3.out" }, 0.2);
+  tl.to("#orbA", { x: -220, y: 120, duration: 7.6, ease: "sine.inOut" }, 0.4);
+  tl.from("#orbB", { opacity: 0, scale: 0.6, duration: 1.6, ease: "power3.out" }, 0.4);
+  tl.to("#orbB", { x: 260, y: -140, duration: 7.4, ease: "sine.inOut" }, 0.6);
+
+  // Logo pops in, wordmark slides after it
+  tl.from("#logoMark", { scale: 0, rotation: -90, duration: 0.8, ease: "back.out(1.8)" }, 0.25);
+  tl.from("#logoWord", { opacity: 0, x: -24, duration: 0.6, ease: "power3.out" }, 0.55);
+  tl.to("#logo", { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" }, 5.0);
+
+  // Headline words rise out of their line masks, staggered
+  tl.from("#hw1", { yPercent: 110, rotation: 4, duration: 0.7, ease: "expo.out" }, 0.75);
+  tl.from("#hw2", { yPercent: 110, rotation: 4, duration: 0.7, ease: "expo.out" }, 0.83);
+  tl.from("#hw3", { yPercent: 110, rotation: 4, duration: 0.7, ease: "expo.out" }, 0.95);
+  tl.from("#hw4", { yPercent: 110, rotation: 4, duration: 0.7, ease: "expo.out" }, 1.03);
+  tl.from("#hw5", { yPercent: 110, scale: 0.9, duration: 0.9, ease: "expo.out" }, 1.2);
+  tl.to("#headline", { opacity: 0, y: -30, duration: 0.45, ease: "power2.in" }, 4.95);
+
+  // Supporting line fades up with a soft blur
+  tl.from("#subline", { opacity: 0, y: 24, filter: "blur(8px)", duration: 0.8, ease: "power3.out" }, 1.55);
+  tl.to("#subline", { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" }, 5.0);
+
+  // Preview card glides in, tracks draw on, playhead scrubs, shape animates
+  tl.from("#previewCard", { opacity: 0, y: 80, rotationX: 18, scale: 0.94, transformPerspective: 1200, duration: 0.9, ease: "power4.out" }, 2.05);
+  tl.from("#pcT1", { scaleX: 0, duration: 0.6, ease: "power3.out" }, 2.5);
+  tl.from("#pcT2", { scaleX: 0, duration: 0.6, ease: "power3.out" }, 2.62);
+  tl.from("#pcT3", { scaleX: 0, duration: 0.6, ease: "power3.out" }, 2.74);
+  tl.to("#pcHead", { x: 600, duration: 2.2, ease: "none" }, 2.8);
+  tl.to("#pcShape", { x: 420, rotation: 180, borderRadius: "50%", duration: 2.2, ease: "power2.inOut" }, 2.8);
+  tl.to("#previewCard", { opacity: 0, y: -40, scale: 0.96, duration: 0.45, ease: "power2.in" }, 4.95);
+
+  // Log card slides up over the preview, rows tick in one by one
+  tl.from("#logCard", { opacity: 0, y: 60, x: -30, duration: 0.7, ease: "power4.out" }, 2.65);
+  tl.from("#log1", { opacity: 0, x: -20, duration: 0.45, ease: "power3.out" }, 2.95);
+  tl.from("#log2", { opacity: 0, x: -20, duration: 0.45, ease: "power3.out" }, 3.3);
+  tl.from("#log3", { opacity: 0, x: -20, duration: 0.45, ease: "power3.out" }, 3.65);
+  tl.to("#logCard", { opacity: 0, y: 30, duration: 0.4, ease: "power2.in" }, 5.0);
+
+  // Agent cursor flies in, grabs the shape, drags it along the canvas
+  tl.from("#agentCursor", { opacity: 0, duration: 0.3, ease: "power1.out" }, 2.2);
+  tl.to("#agentCursor", { x: -410, y: -490, duration: 0.6, ease: "power3.inOut" }, 2.2);
+  tl.to("#agentCursor", { scale: 0.82, duration: 0.1, ease: "power2.out", yoyo: true, repeat: 1 }, 2.75);
+  tl.to("#agentCursor", { x: 10, duration: 2.2, ease: "power2.inOut" }, 2.8);
+  tl.to("#agentCursor", { opacity: 0, duration: 0.35, ease: "power2.in" }, 5.0);
+
+  // End card: ring blooms, mark spins in, wordmark and tag follow
+  tl.from("#endRing", { opacity: 0, scale: 0.3, duration: 1.2, ease: "expo.out" }, 5.2);
+  tl.to("#endRing", { scale: 1.15, rotation: 30, duration: 2.6, ease: "sine.out" }, 5.4);
+  tl.from("#endMark", { scale: 0, rotation: -120, duration: 0.9, ease: "back.out(1.7)" }, 5.3);
+  tl.from("#endWord", { opacity: 0, y: 50, letterSpacing: "0.04em", duration: 0.8, ease: "expo.out" }, 5.55);
+  tl.from("#endTag", { opacity: 0, y: 24, duration: 0.6, ease: "power3.out" }, 5.85);
+
+  // CTA pops up, a shine sweeps across, note settles in
+  tl.from("#ctaBtn", { opacity: 0, y: 40, scale: 0.85, duration: 0.7, ease: "back.out(1.6)" }, 6.05);
+  tl.to("#ctaShine", { x: 900, duration: 0.9, ease: "power2.inOut" }, 6.7);
+  tl.from("#ctaNote", { opacity: 0, y: 16, duration: 0.5, ease: "power3.out" }, 6.4);
+  tl.to("#ctaBtn", { scale: 1.04, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.2);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines.teaser = tl;
+</script>
+</body>
+</html>

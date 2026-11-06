@@ -51,7 +51,9 @@ function readComp(win, html) {
     for (const child of tl.getChildren(false, true, true)) {
       const at = offset + child.startTime();
       if (child.getChildren) walk(child, at);
-      else tweens.push({ targets: child.targets().filter(t => t?.nodeType === 1), start: at, end: at + child.duration() });
+      else tweens.push({ targets: child.targets().filter(t => t?.nodeType === 1), start: at, end: at + child.duration(),
+        // from() and fromTo() tweens bring an element in; to() tweens are often drifts or exits.
+        enter: !!(child.vars?.runBackwards || child.vars?.startAt) });
     }
   };
   for (const tl of timelines) {
@@ -140,7 +142,11 @@ function nameOf(el) {
   if (!el) return 'element';
   if (el.hasAttribute('data-composition-id')) return 'stage';
   if (el.id) return '#' + el.id;
-  const text = el.textContent.replace(/\s+/g, ' ').trim();
+  // Join text nodes with spaces, so <span>Watch</span><span>agents</span> reads "Watch agents".
+  const parts = [];
+  const w = el.ownerDocument.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  while (w.nextNode()) parts.push(w.currentNode.data);
+  const text = parts.join(' ').replace(/\s+/g, ' ').trim();
   if (text && text.length < 40) return `“${snip(text, 22)}”`;
   const cls = el.classList[0];
   return el.tagName.toLowerCase() + (cls ? '.' + cls : '');
@@ -379,12 +385,17 @@ function setStatus(text, busy) {
   $('#status').classList.toggle('busy', !!busy);
 }
 
-// Time where the element looks "finished": the end of its own animations, inside its clip.
+// Time where the element looks "finished": the end of its entrance animations, inside its clip.
 function focusTime(fi, el) {
   if (!fi || !el) return state.t;
   const host = el.closest('[data-start]:not([data-composition-id])');
   const clip = fi.clips.find(c => c.el === host);
-  const ends = fi.tweens.filter(tw => tw.targets.some(t => t === el || el.contains(t))).map(tw => tw.end);
+  const within = n => fi.tweens.filter(tw => tw.targets.some(t => t === n || n.contains(t)));
+  // A child with no entrance of its own (for example a card's inner parts) is ready when its clip is.
+  let pool = within(el).filter(tw => tw.enter);
+  if (!pool.length && host) pool = within(host).filter(tw => tw.enter);
+  if (!pool.length) pool = within(el);
+  const ends = pool.map(tw => tw.end);
   let t = ends.length ? Math.max(...ends) : clip ? clip.start + Math.min(0.5, (clip.dur ?? 1) / 2) : state.t;
   if (clip) t = clamp(t, clip.start, (clip.dur != null ? clip.start + clip.dur : fi.duration) - 0.05);
   return clamp(t, 0, fi.duration - 0.01);
@@ -450,7 +461,7 @@ async function apply(html, animate) {
   if (wasPlaying) setPlaying(true);
 }
 
-// Every version seen in this session, so "Replay build" can play the steps in their real order.
+// Every saved version (the server sends earlier ones on connect), so "Replay build" can play the steps in order.
 const history = [];
 let replayQueue = [];
 
@@ -590,6 +601,7 @@ $('#replay').addEventListener('click', async () => {
 // ---------- live updates ----------
 
 const events = new EventSource('/events');
+events.addEventListener('history', e => history.splice(0, history.length, ...JSON.parse(e.data)));
 events.addEventListener('comp', e => {
   const { file, html } = JSON.parse(e.data);
   $('#file').textContent = file;

@@ -18,6 +18,8 @@ const MIME = {
 
 const read = () => { try { return fs.readFileSync(file, 'utf8'); } catch { return null; } };
 let current = read();
+// Every saved version since start, so a viewer that loads later can still replay the whole build.
+const versions = current?.trim() ? [current] : [];
 const clients = new Set();
 const event = () => `event: comp\ndata: ${JSON.stringify({ file: path.relative(process.cwd(), file) || file, html: current })}\n\n`;
 
@@ -29,6 +31,8 @@ fs.watchFile(file, { interval: 150 }, () => {
     const next = read();
     if (next === current) return;
     current = next;
+    if (!next?.trim()) versions.length = 0; // the agent started over
+    else versions.push(next);
     for (const res of clients) res.write(event());
   }, 120);
 });
@@ -46,6 +50,7 @@ http.createServer((req, res) => {
   const p = decodeURIComponent(url.pathname);
   if (p === '/events') {
     res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-store', connection: 'keep-alive' });
+    res.write(`event: history\ndata: ${JSON.stringify(versions)}\n\n`);
     res.write(event());
     clients.add(res);
     const ping = setInterval(() => res.write(': ping\n\n'), 20000);

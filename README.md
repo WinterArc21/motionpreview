@@ -21,6 +21,10 @@ npm run demo:agent   # writes the composition in 6 steps
 
 Click **Replay build** to watch the current composition get built again from an empty canvas. Add `?speed=2` to the URL for faster cursor actions, and `?agent=Claude` to set the name on the cursor.
 
+Real example: `examples/claude-teaser/index.html` is an 8-second teaser that a Claude agent built in 13 saves while this viewer watched. Run `node bin/hyperframes-live.js examples/claude-teaser/index.html` and edit the file, or point an agent at it.
+
+The server keeps every saved version while it runs, so **Replay build** plays the whole build again even after a page reload.
+
 ## Labels from the agent
 
 Tell the agent to mark its work with step comments. Each new step shows in the status bar and as a header in the Activity panel:
