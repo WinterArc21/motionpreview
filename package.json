@@ -1,0 +1,14 @@
+{
+  "name": "hyperframes-live",
+  "version": "0.1.0",
+  "description": "Live renderer for HyperFrames compositions, with an agent cursor that performs each code change.",
+  "type": "module",
+  "bin": { "hyperframes-live": "bin/hyperframes-live.js" },
+  "scripts": {
+    "start": "node bin/hyperframes-live.js",
+    "demo": "node bin/hyperframes-live.js demo/index.html",
+    "demo:agent": "node scripts/demo-agent.mjs demo/index.html"
+  },
+  "engines": { "node": ">=20.11" },
+  "license": "MIT"
+}

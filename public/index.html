@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>HyperFrames Live</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="mark"></span>HyperFrames Live</div>
+    <div id="file" class="file"></div>
+    <div id="status" class="status"><span class="dot"></span><span id="statusText">Connecting…</span></div>
+    <div class="spacer"></div>
+    <button id="replay" title="Play the build again from an empty canvas">Replay build</button>
+  </header>
+  <main>
+    <section id="viewport">
+      <div id="stage">
+        <iframe id="frameA" class="front" title="Composition"></iframe>
+        <iframe id="frameB" title="Composition (next version)"></iframe>
+        <div id="empty">Waiting for the agent to write the composition…</div>
+      </div>
+      <div id="size"></div>
+    </section>
+    <aside id="activity">
+      <h3>Activity</h3>
+      <ol id="feed"></ol>
+    </aside>
+  </main>
+  <footer id="timeline">
+    <div class="controls">
+      <button id="play" title="Play / pause (Space)">▶</button>
+      <span id="time">0.00s / 0.00s</span>
+    </div>
+    <div id="tracks">
+      <div id="ruler"></div>
+      <div id="rows"></div>
+      <div id="playhead"></div>
+    </div>
+  </footer>
+  <div id="overlay">
+    <div id="selection"><span></span></div>
+    <div id="cursor">
+      <svg width="22" height="22" viewBox="0 0 22 22"><path d="M3 2 L3 18 L7.5 13.8 L10.6 20.4 L13.4 19.1 L10.4 12.6 L16.6 12.4 Z" fill="var(--agent)" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      <div class="tag"><b>Agent</b><span id="cursorText"></span></div>
+    </div>
+  </div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
